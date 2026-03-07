@@ -95,9 +95,9 @@ function cra_trend_arrow_tag($last, $median): ?CTag {
     return $tag;
 }
 
-function cra_make_sparkline(array $points, int $width = 320, int $height = 72): string {
+function cra_make_sparkline(array $points, int $width = 320, int $height = 72): ?CTag {
     if (!$points) {
-        return '';
+        return null;
     }
 
     $values = [];
@@ -125,10 +125,28 @@ function cra_make_sparkline(array $points, int $width = 320, int $height = 72): 
 
     $polyline = implode(' ', $coords);
 
-    return '<svg class="cra-spark-svg" viewBox="0 0 '.$width.' '.$height.'" preserveAspectRatio="none">'
-        .'<rect x="0" y="0" width="'.$width.'" height="'.$height.'" rx="8" ry="8" class="cra-spark-bg"></rect>'
-        .'<polyline points="'.$polyline.'" class="cra-spark-line"></polyline>'
-        .'</svg>';
+    $svg = new CTag('svg', true);
+    $svg->addClass('cra-spark-svg');
+    $svg->setAttribute('viewBox', '0 0 '.$width.' '.$height);
+    $svg->setAttribute('preserveAspectRatio', 'none');
+
+    $rect = new CTag('rect', true);
+    $rect->setAttribute('x', '0');
+    $rect->setAttribute('y', '0');
+    $rect->setAttribute('width', (string) $width);
+    $rect->setAttribute('height', (string) $height);
+    $rect->setAttribute('rx', '8');
+    $rect->setAttribute('ry', '8');
+    $rect->addClass('cra-spark-bg');
+
+    $line = new CTag('polyline', true);
+    $line->setAttribute('points', $polyline);
+    $line->addClass('cra-spark-line');
+
+    $svg->addItem($rect);
+    $svg->addItem($line);
+
+    return $svg;
 }
 
 function cra_metric_popup(?array $stats, string $label, string $metric_name, $display_value): CTag {
@@ -177,10 +195,11 @@ function cra_metric_popup(?array $stats, string $label, string $metric_name, $di
     $title->addClass('cra-peak-meta');
     $body->addItem($title);
 
-    $spark_html = cra_make_sparkline($stats['points'] ?? []);
-    if ($spark_html !== '') {
-        $spark = new CTag('div', true, $spark_html);
+    $spark_chart = cra_make_sparkline($stats['points'] ?? []);
+    if ($spark_chart !== null) {
+        $spark = new CDiv();
         $spark->addClass('cra-spark-wrap');
+        $spark->addItem($spark_chart);
         $body->addItem($spark);
     }
 
@@ -222,10 +241,11 @@ function cra_peak_details(?array $stats, string $label): CTag {
     $meta->addClass('cra-peak-meta');
     $body->addItem($meta);
 
-    $spark_html = cra_make_sparkline($stats['points'] ?? []);
-    if ($spark_html !== '') {
-        $spark = new CTag('div', true, $spark_html);
+    $spark_chart = cra_make_sparkline($stats['points'] ?? []);
+    if ($spark_chart !== null) {
+        $spark = new CDiv();
         $spark->addClass('cra-spark-wrap');
+        $spark->addItem($spark_chart);
         $body->addItem($spark);
     }
 
