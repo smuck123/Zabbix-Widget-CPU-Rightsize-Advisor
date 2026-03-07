@@ -23,6 +23,7 @@ It summarizes utilization medians/peaks, estimates right-size recommendations, a
   - Estimated cost
 - Candidate-only filtering
 - Compact mode for dense dashboards
+<img width="1600" height="305" alt="image" src="https://github.com/user-attachments/assets/ea19286b-8930-4791-8940-6193d10eb4d8" />
 
 ## Repository structure
 
