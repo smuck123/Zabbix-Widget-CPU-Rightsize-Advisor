@@ -1,0 +1,29 @@
+{
+    "manifest_version": 2.0,
+    "id": "CPU Rightsizing_advisor",
+    "type": "widget",
+    "name": "CPU Rightsizing Advisor",
+    "namespace": "CpuRightsizingAdvisor",
+    "version": "1.0",
+    "author": "Janne Kivelä",
+    "description": "Shows historical CPU and memory medians and suggests servers that may be oversized.",
+    "widget": {
+        "name": "CPU Rightsizing Advisor",
+        "size": {
+            "width": 36,
+            "height": 8
+        },
+        "refresh_rate": 300,
+        "form_class": "WidgetForm"
+    },
+    "actions": {
+        "widget.cpu_rightsizing_advisor.view": {
+            "class": "WidgetView"
+        }
+    },
+    "assets": {
+        "css": [
+            "widget.css"
+        ]
+    }
+}
