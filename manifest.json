@@ -1,6 +1,6 @@
 {
     "manifest_version": 2.0,
-    "id": "CPU Rightsizing_advisor",
+    "id": "CPU_Rightsizing_advisor",
     "type": "widget",
     "name": "CPU Rightsizing Advisor",
     "namespace": "CpuRightsizingAdvisor",
