@@ -538,13 +538,13 @@ class WidgetView extends CControllerDashboardWidgetView {
         $savings = 0.0;
 
         if ($cpu_is_candidate && $cpu_count !== null && $cpu_count >= 2) {
-            $new_cpu = max(1, (int) floor($cpu_count / 2));
+            $new_cpu = $this->recommendedEvenCpuForDecrease((int) floor($cpu_count / 2));
             $saved_cpu = max(0, $cpu_count - $new_cpu);
             $savings += $saved_cpu * $cpu_unit_cost;
         }
 
         if ($mem_is_candidate && $vmem_total_gb !== null && $vmem_total_gb > 0) {
-            $new_vmem = max(1, round($vmem_total_gb * 0.75));
+            $new_vmem = $this->recommendedEvenMemory((int) round($vmem_total_gb * 0.75));
             $saved_vmem = max(0, $vmem_total_gb - $new_vmem);
             $savings += $saved_vmem * $memory_unit_cost;
         }
@@ -565,7 +565,7 @@ class WidgetView extends CControllerDashboardWidgetView {
         $hints = [];
 
         if ($cpu_is_candidate && $cpu_count !== null && $cpu_count >= 2) {
-            $new_cpu = max(1, (int) floor($cpu_count / 2));
+            $new_cpu = $this->recommendedEvenCpuForDecrease((int) floor($cpu_count / 2));
             if ($new_cpu < (int) $cpu_count) {
                 $hints[] = 'vCPU: decrease from '.(int) $cpu_count.' to '.$new_cpu;
             }
@@ -576,7 +576,7 @@ class WidgetView extends CControllerDashboardWidgetView {
 
         if ($mem_is_candidate && $mem_total_bytes !== null && $mem_total_bytes > 0) {
             $new_mem_bytes = $mem_total_bytes * 0.75;
-            $new_mem_gb = max(1, round($new_mem_bytes / 1024 / 1024 / 1024));
+            $new_mem_gb = $this->recommendedEvenMemory((int) round($new_mem_bytes / 1024 / 1024 / 1024));
             $current_mem_gb = round($mem_total_bytes / 1024 / 1024 / 1024, 1);
 
             if ($new_mem_gb < $current_mem_gb) {
@@ -588,9 +588,9 @@ class WidgetView extends CControllerDashboardWidgetView {
         }
 
         if ($cpu_busy && $cpu_count !== null && $cpu_count >= 1) {
-            $new_cpu = (int) ceil($cpu_count * 1.5);
+            $new_cpu = $this->recommendedEvenCpuForIncrease((int) ceil($cpu_count * 1.5));
             if ($new_cpu <= (int) $cpu_count) {
-                $new_cpu = (int) $cpu_count + 1;
+                $new_cpu = $this->recommendedEvenCpuForIncrease((int) $cpu_count + 1);
             }
             $hints[] = 'vCPU: consider increase from '.(int) $cpu_count.' to '.$new_cpu;
         }
@@ -600,7 +600,8 @@ class WidgetView extends CControllerDashboardWidgetView {
 
         if ($mem_busy && $mem_total_bytes !== null && $mem_total_bytes > 0) {
             $current_mem_gb = round($mem_total_bytes / 1024 / 1024 / 1024, 1);
-            $new_mem_gb = max($current_mem_gb + 1, round($current_mem_gb * 1.25));
+            $new_mem_gb = max((int) ceil($current_mem_gb + 1), (int) round($current_mem_gb * 1.25));
+            $new_mem_gb = $this->recommendedEvenMemory($new_mem_gb);
             $hints[] = 'vMEM: consider increase from '.$current_mem_gb.' GB to about '.$new_mem_gb.' GB';
         }
         elseif ($mem_busy) {
@@ -648,5 +649,29 @@ class WidgetView extends CControllerDashboardWidgetView {
         $value = ((1 - $weight) * $values[$lower]) + ($weight * $values[$upper]);
 
         return round((float) $value, 2);
+    }
+
+    private function recommendedEvenCpuForDecrease(int $cpu): int {
+        return $this->toEven($cpu, true, 2);
+    }
+
+    private function recommendedEvenCpuForIncrease(int $cpu): int {
+        return $this->toEven($cpu, false, 2);
+    }
+
+    private function recommendedEvenMemory(int $memory_gb): int {
+        return $this->toEven($memory_gb, false, 2);
+    }
+
+    private function toEven(int $value, bool $round_down, int $minimum_even): int {
+        if ($value % 2 !== 0) {
+            $value += $round_down ? -1 : 1;
+        }
+
+        if ($value < $minimum_even) {
+            return $minimum_even;
+        }
+
+        return $value;
     }
 }
